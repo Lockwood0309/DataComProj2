@@ -1,6 +1,10 @@
 package Centralized_Server;
 
 import java.net.*;
+import java.util.StringTokenizer;
+
+import javax.management.loading.PrivateClassLoader;
+
 import java.io.*;
 
 // Centralized Server Specs:
@@ -15,14 +19,37 @@ public class CentralizedServer extends Thread {
 
     private Socket connSocket;
 
+    private DataOutputStream outToClient;
+    private BufferedReader inFromHost;
+
+    private String username;
+    private String hostname;
+    private String connSpeed;
+
     public CentralizedServer(Socket connSocket){
         this.connSocket = connSocket;
+    }
+
+    // Sets up initial connection with a host & obtains the host's credentials
+    private void initConnection(){
+        try{
+            outToClient = new DataOutputStream(connSocket.getOutputStream());
+            inFromHost = new BufferedReader(new InputStreamReader(connSocket.getInputStream()));
+
+            StringTokenizer tokens = new StringTokenizer(inFromHost.readLine());
+            username = tokens.nextToken();
+            hostname = tokens.nextToken();
+            connSpeed = tokens.nextToken();
+        }catch(Exception e){
+            System.out.println("Error Occured while Establishing a new connection");
+        }
+
     }
 
     // Establish Connection with host, let host known connection has been made, retireve filenames and descriptor,
     // wait for commands (keyword, close Connection) from host
     public void run(){
-        
+        initConnection();
     }
 
     // Wait for new connection. Create new thread to handle connection once established
