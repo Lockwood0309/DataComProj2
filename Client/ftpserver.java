@@ -10,7 +10,7 @@ public class ftpserver extends Thread {
 
     public void run(){
         try{
-            ServerSocket serverSocket = new ServerSocket(1200);
+            ServerSocket serverSocket = new ServerSocket(21);
 
             while(true){
                 server_handler ftp_server_handler = new server_handler(serverSocket.accept());
@@ -19,7 +19,7 @@ public class ftpserver extends Thread {
             }
 
         }catch(IOException e){
-            System.err.println("Could not listen on port: 1200.");
+            System.err.println("Could not listen on port: 1200." + e.getMessage());
             System.exit(-1);
         }
     }

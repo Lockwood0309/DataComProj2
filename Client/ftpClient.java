@@ -17,6 +17,8 @@ public class ftpClient {
     Socket ControlSocket;
     int port = 1200;
 
+    int connPort;
+    String ip;
 
     DataOutputStream outToServer;
     DataInputStream inFromServer;
@@ -30,6 +32,8 @@ public class ftpClient {
 
     public void connect_to_server(String ip, int port, String username, String hostname, String connSpeed){
         try{
+            connPort = port;
+            this.ip = ip;
             ControlSocket = new Socket(ip, port);
             // Display connection to output window
 
@@ -38,7 +42,9 @@ public class ftpClient {
             //BufferedReader inFromClient = new BufferedReader(new InputStreamReader(ControlSocket.getInputStream()));
 
             // Set host creds
+            System.out.println(username+ " " + hostname + " " + connSpeed);
             outToServer.writeUTF(username+ " " + hostname + " " + connSpeed);
+
 
             File dir = new File(System.getProperty("user.dir"));
             String[] files = dir.list();
@@ -58,9 +64,13 @@ public class ftpClient {
 
     public void keyword_search(String keyword){
         try{
+            System.out.println("key " + keyword);
+
             port += 2;
             ServerSocket welcomeData = new ServerSocket(port);
             outToServer.writeBytes(port + " keyword " + keyword);
+
+            System.out.println("key: " + keyword);
 
             Socket dataSocket = welcomeData.accept();
 
@@ -89,10 +99,10 @@ public class ftpClient {
                 }});
                 count++;
             }
-
             welcomeData.close();
         }catch(Exception e){
             // Display error to output window
+            System.out.println("Error: " + e.getMessage());
         }
     }
 

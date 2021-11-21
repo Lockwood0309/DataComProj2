@@ -192,6 +192,7 @@ public class Host_GUI extends JFrame{
         // Make a keyword serach with the centralized server
         btn_search.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e){
+                System.out.println(tb_keyword.getText());
                 client.keyword_search(tb_keyword.getText());
             }
         });

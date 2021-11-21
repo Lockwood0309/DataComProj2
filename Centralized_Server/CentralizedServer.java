@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 import java.util.concurrent.locks.Lock;
 import java.util.*;
+import java.util.concurrent.locks.*;
 
 import javax.management.loading.PrivateClassLoader;
 import javax.sound.sampled.Port;
@@ -26,12 +27,13 @@ public class CentralizedServer{
     private Dictionary<Integer,ArrayList<String>> creds = new Hashtable<>();
     private Dictionary<Integer,ArrayList<String>> file_info = new Hashtable<>();
 
-    private Lock creds_lock;
-    private Lock file_info_lock;
+    private Lock creds_lock = new ReentrantLock();
+    private Lock file_info_lock = new ReentrantLock();
 
     // Wait for new connection. Create new thread to handle connection once established
     private void newConnection(Integer ID, ServerSocket serverSocket) throws Exception{
         host_handler new_host_handler = new host_handler(ID,serverSocket.accept());
+        System.out.println("connected");
         Thread hostHandler = new Thread(new_host_handler);
         hostHandler.start();
     }
@@ -66,7 +68,7 @@ public class CentralizedServer{
         
         Socket connSocket;
         DataOutputStream outToHost;
-        BufferedReader inFromHost;
+        DataInputStream inFromHost;
 
 
         host_handler(Integer ID, Socket connSocket){
@@ -74,7 +76,7 @@ public class CentralizedServer{
                 this.my_ID = ID;
                 this.connSocket = connSocket;
                 outToHost = new DataOutputStream(connSocket.getOutputStream());
-                inFromHost = new BufferedReader(new InputStreamReader(connSocket.getInputStream()));
+                inFromHost = new DataInputStream(connSocket.getInputStream());
             }catch(Exception e){
                 System.err.println("Could not connect wih " + ID.toString() + ": " + connSocket.getInetAddress().toString() + ". Error: " + e.getMessage());
 
@@ -89,23 +91,37 @@ public class CentralizedServer{
                 set_host_file_info(get_host_file_info());
                 host_sends_command();
             }catch(Exception e){
+                System.err.println("Could not get the host credentials. Error: " + e.getMessage());
                 // Error has occured and the thread will now end with the host. The output statment has been handled by the function that threw it.
             }
         }
 
         // Gets the host creds and returns them as an ArrayList
         private ArrayList<String> get_host_creds() throws Exception{
+            System.out.println("host_creds");
             ArrayList<String> host_cred = new ArrayList<String>(){{
             try{
-                StringTokenizer tokens = new StringTokenizer(inFromHost.readLine());
+                String line = " ";
+                System.out.println("Line: " + line);
+                StringTokenizer tokens = new StringTokenizer(line = inFromHost.readUTF());
+                System.out.println("Line: " + line);
                 add(tokens.nextToken()); // username
                 add(tokens.nextToken()); // hostname
                 add(tokens.nextToken()); // connection speed
+                System.out.println("Line: " + line);
             }catch(Exception e){
                 System.err.println("Could not get the host credentials. Error: " + e.getMessage());
                 throw new Exception();
             }
             };};
+
+
+            System.out.println(host_cred.get(0));
+
+            System.out.println(host_cred.get(1));
+
+            System.out.println(host_cred.get(2));
+
             return host_cred;
         }
 
@@ -121,7 +137,7 @@ public class CentralizedServer{
             ArrayList<String> host_file_info = new ArrayList<String>(){{
                 try {
                     String data;
-                    while((data = inFromHost.readLine()).equals("eof")){
+                    while((data = inFromHost.readUTF()).equals("eof") ){
                         add(data);
                     }
                 } catch (Exception e) {
@@ -129,6 +145,11 @@ public class CentralizedServer{
                     throw new Exception();
                 }
             };};
+            
+            for(int i=0; i<host_file_info.size(); i++){
+                System.out.println(host_file_info.get(i));
+            }
+
             return host_file_info;
         }
 
@@ -141,14 +162,20 @@ public class CentralizedServer{
         private void host_sends_command() throws Exception{
             try{
                 while(true){
-                    String cmd;
-                    StringTokenizer tokens = new StringTokenizer(inFromHost.readLine());
-                    if((cmd = tokens.nextToken()).equals("close")){
-                        close_connection();
-                    }else{                                          // cmd must equal keyword search (Check for input error on Client end)
-                        port = Integer.parseInt(cmd);
+                    String line;
+                    if((line = inFromHost.readUTF()).equals("eof")){
+                        String cmd;
+                        StringTokenizer tokens = new StringTokenizer(line);
                         cmd = tokens.nextToken();
-                        keyword_search(tokens.nextToken());
+                        System.out.println("cmd: "+cmd);
+                        if(cmd.equals("close")){
+                            close_connection();
+                        }else if(cmd.equals("keyword")){                                          // cmd must equal keyword search (Check for input error on Client end)
+                            port = Integer.parseInt(cmd);
+                            cmd = tokens.nextToken();
+                            keyword_search(tokens.nextToken());
+                        }
+                        System.out.println("wtf");
                     }
                 }
             }catch(Exception e){
@@ -159,6 +186,7 @@ public class CentralizedServer{
 
         // Searches the outer classes file_info dictionary for any file_info that matches keyword
         private void keyword_search(String keyword) throws Exception{
+            print_tables();
             try {
                 Socket dataSocket = new Socket(connSocket.getInetAddress(), port);
                 DataOutputStream outData = new DataOutputStream(dataSocket.getOutputStream());
@@ -185,5 +213,23 @@ public class CentralizedServer{
 
         // Closes all connections with the host assciated with my_ID
         private void close_connection(){
-
+        
         }
+
+        private void print_tables(){
+            System.out.println("wtf");
+            for(int i =0; i<creds.size(); i++){
+                for(String cred : creds.get(i)){
+                    System.out.println("creds["+i+"]: " + cred);
+                }
+            }
+
+            for(int i =0; i<file_info.size(); i++){
+                for(String info : file_info.get(i)){
+                    System.out.println("fileinfo["+i+"]: " + info);
+                }
+            }
+        }
+
+    }
+}
