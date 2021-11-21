@@ -164,10 +164,22 @@ public class CentralizedServer{
                 DataOutputStream outData = new DataOutputStream(dataSocket.getOutputStream());
                 
                 // Search For files in dictionary => send them back to the host
+                for(int i = 0; i < file_info.size(); i++){
+                    for(String info : file_info.get(i)){
+                        if(info.contains(keyword)){
+                            // return to client hostname port filename connSpeed
+                            String hostname = creds.get(i).get(1); // creds.get(i).get(1) => hostname
+                            String port = "1200";
+                            String filename = file_info.get(i).get(0); // file_info.get(i).get(0) => filename
+                            String connSpeed = creds.get(i).get(2); // creds.get(i).get(2) => connSpeed
 
-                   
+                            outData.writeUTF(hostname + " " + port + " " + filename + " " + connSpeed);
+                        }
+                    }
+                }
+                outData.writeUTF("eof");;
             } catch (Exception e) {
-                //TODO: handle exception
+                // Do nothing
             }
         }
 
