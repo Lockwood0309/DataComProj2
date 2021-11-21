@@ -42,7 +42,7 @@ public class ftpserver extends Thread {
             }
         }
 
-        public void processRequest() throws Exception{  
+        public void processRequest() throws Exception{
             DataOutputStream  outToClient = new DataOutputStream(connectionSocket.getOutputStream());
             BufferedReader inFromClient = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
         while(true){
@@ -55,7 +55,7 @@ public class ftpserver extends Thread {
                 port = Integer.parseInt(frstln);
                 //clientCommand = tokens.nextToken();
             }
-            
+
         }
         }
 

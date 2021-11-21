@@ -3,7 +3,7 @@ package Client;
 // Create GUI according to project spec:
 // Connection Fields: Server Hostname, Port, Username, Hostname, Speed
 
-// Search Fields: Keyword, Connection points 
+// Search Fields: Keyword, Connection points
 
 // FTP Command Line Fields: Command Line, Output Log
 
@@ -105,13 +105,13 @@ public class Host_GUI extends JFrame{
     private final JPanel connection_panel = new JPanel(){{
             setBorder(BorderFactory.createTitledBorder("connection"));
             setBounds(5, 5, scrn_size.width-10, 100);
-           
+
             add(lb_server_hostname);
             add(tb_server_host);
 
             add(lb_connection_port);
             add(tb_port);
-            
+
             add(btn_connect);
 
             add(lb_username);
@@ -158,7 +158,7 @@ public class Host_GUI extends JFrame{
     public Host_GUI(ftpClient client){
         this.client = client;
 
-        
+
         this.setSize(scrn_size);
         this.setTitle("Data Communication P2");
         this.setResizable(false);                   // No resizing for absolute pos.
@@ -178,18 +178,18 @@ public class Host_GUI extends JFrame{
             }
         });
 
-         // Establish connection w/ centralixed server 
+         // Establish connection w/ centralixed server
         btn_connect.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e){
                 try{
                     client.connect_to_server(tb_server_host.getText(), Integer.parseInt(tb_port.getText()), tb_username.getText(), tb_hostname.getText(), cbx_speed.getSelectedItem().toString());
                 }catch(Exception ex){
                     // User entered a non int port#
-                } 
+                }
             }
         });
 
-        // Make a keyword serach with the centralized server 
+        // Make a keyword serach with the centralized server
         btn_search.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e){
                 client.keyword_search(tb_keyword.getText());

@@ -13,7 +13,7 @@ import java.util.*;
 
 
 public class ftpClient {
-    
+
     Socket ControlSocket;
     int port = 1200;
 
@@ -36,7 +36,7 @@ public class ftpClient {
             outToServer = new DataOutputStream(ControlSocket.getOutputStream());
             inFromServer = new DataInputStream(ControlSocket.getInputStream());
             //BufferedReader inFromClient = new BufferedReader(new InputStreamReader(ControlSocket.getInputStream()));
-            
+
             // Set host creds
             outToServer.writeUTF(username+ " " + hostname + " " + connSpeed);
 
@@ -50,7 +50,7 @@ public class ftpClient {
                     outToServer.writeUTF(file);
                 }
                 outToServer.writeUTF("eof");
-            }  
+            }
         }catch(Exception e){
             // Display error to output window
         }

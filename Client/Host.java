@@ -2,8 +2,8 @@ package Client;
 
 // Host encapsulates ftpClient & ftpServer along with init host GUI
 // Basically will serve as a medium between the two
-// If hostB machine connects to HostA to get a file, spawn a new server thread to handle this interaction so that the HostA can still perform 
-// keyword searches and get calls 
+// If hostB machine connects to HostA to get a file, spawn a new server thread to handle this interaction so that the HostA can still perform
+// keyword searches and get calls
 
 
 // 1.) Set up GUI
