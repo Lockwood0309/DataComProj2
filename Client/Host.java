@@ -18,15 +18,18 @@ public class Host {
     Host_GUI host_GUI;
 
     public void run(){
-        host_client = new ftpClient();
-        host_server = new ftpserver();
-
-        Thread ftp_server_thread = new Thread(host_server);
-        ftp_server_thread.start();
+        host_client = new ftpClient(this);
+        host_server = new ftpserver(host_client);
 
         host_GUI = new Host_GUI(host_client);
+        host_client.set_GUI(host_GUI);
 
         host_GUI.setVisible(true);
+    }
+
+    public void start_ftpserver(){
+        Thread ftp_server_thread = new Thread(host_server);
+        ftp_server_thread.start();
     }
     public static void main(String args[]){
         // Init GUI, ftpClient, ftpServer (main Thread)

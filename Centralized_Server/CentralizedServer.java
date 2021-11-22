@@ -30,9 +30,12 @@ public class CentralizedServer{
     private Lock creds_lock = new ReentrantLock();
     private Lock file_info_lock = new ReentrantLock();
 
+    int client_count = 0;
+
     // Wait for new connection. Create new thread to handle connection once established
     private void newConnection(Integer ID, ServerSocket serverSocket) throws Exception{
         host_handler new_host_handler = new host_handler(ID,serverSocket.accept());
+        client_count += 1;
         System.out.println("connected");
         Thread hostHandler = new Thread(new_host_handler);
         hostHandler.start();
@@ -87,6 +90,7 @@ public class CentralizedServer{
         // wait for commands (keyword, close Connection) from host
         public void run(){
             try{
+
                 set_host_creds(get_host_creds());
                 set_host_file_info(get_host_file_info());
                 host_sends_command();
@@ -101,6 +105,8 @@ public class CentralizedServer{
             System.out.println("host_creds");
             ArrayList<String> host_cred = new ArrayList<String>(){{
             try{
+                outToHost.writeUTF(String.valueOf(client_count));
+
                 String line = " ";
                 System.out.println("Line: " + line);
                 StringTokenizer tokens = new StringTokenizer(line = inFromHost.readUTF());
@@ -108,6 +114,7 @@ public class CentralizedServer{
                 add(tokens.nextToken()); // username
                 add(tokens.nextToken()); // hostname
                 add(tokens.nextToken()); // connection speed
+                add(tokens.nextToken()); // port
                 System.out.println("Line: " + line);
             }catch(Exception e){
                 System.err.println("Could not get the host credentials. Error: " + e.getMessage());
@@ -137,7 +144,7 @@ public class CentralizedServer{
             ArrayList<String> host_file_info = new ArrayList<String>(){{
                 try {
                     String data;
-                    while((data = inFromHost.readUTF()).equals("eof") ){
+                    while(!(data = inFromHost.readUTF()).equals("eof") ){
                         add(data);
                     }
                 } catch (Exception e) {
@@ -163,19 +170,19 @@ public class CentralizedServer{
             try{
                 while(true){
                     String line;
-                    if((line = inFromHost.readUTF()).equals("eof")){
+                    if(!(line = inFromHost.readUTF()).equals("eof")){
                         String cmd;
                         StringTokenizer tokens = new StringTokenizer(line);
                         cmd = tokens.nextToken();
-                        System.out.println("cmd: "+cmd);
+                        //System.out.println("cmd: "+cmd);
                         if(cmd.equals("close")){
                             close_connection();
                         }else if(cmd.equals("keyword")){                                          // cmd must equal keyword search (Check for input error on Client end)
-                            port = Integer.parseInt(cmd);
-                            cmd = tokens.nextToken();
+                            port = Integer.parseInt(tokens.nextToken());
                             keyword_search(tokens.nextToken());
+                        }else{
+                            System.out.println("wtf");
                         }
-                        System.out.println("wtf");
                     }
                 }
             }catch(Exception e){
@@ -196,10 +203,13 @@ public class CentralizedServer{
                     for(String info : file_info.get(i)){
                         if(info.contains(keyword)){
                             // return to client hostname port filename connSpeed
+
                             String hostname = creds.get(i).get(1); // creds.get(i).get(1) => hostname
-                            String port = "1200";
-                            String filename = file_info.get(i).get(0); // file_info.get(i).get(0) => filename
+                            String port = creds.get(i).get(3);
+                            String filename = info; // file_info.get(i).get(0) => filename
                             String connSpeed = creds.get(i).get(2); // creds.get(i).get(2) => connSpeed
+
+                            System.out.println(hostname + " " + port + " " + filename + " " + connSpeed);
 
                             outData.writeUTF(hostname + " " + port + " " + filename + " " + connSpeed);
                         }
@@ -208,6 +218,7 @@ public class CentralizedServer{
                 outData.writeUTF("eof");;
             } catch (Exception e) {
                 // Do nothing
+                System.out.println("Error " + e.getMessage());
             }
         }
 
@@ -217,7 +228,7 @@ public class CentralizedServer{
         }
 
         private void print_tables(){
-            System.out.println("wtf");
+            System.out.println("wtf2");
             for(int i =0; i<creds.size(); i++){
                 for(String cred : creds.get(i)){
                     System.out.println("creds["+i+"]: " + cred);

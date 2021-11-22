@@ -11,9 +11,13 @@ import javax.swing.*;
 // import javax.swing.border.TitledBorder;
 import javax.swing.plaf.DimensionUIResource;
 // import javax.swing.table.TableModel;
+import javax.swing.table.DefaultTableModel;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.util.Dictionary;
+
+import java.util.ArrayList;
 
 public class Host_GUI extends JFrame{
 
@@ -88,9 +92,23 @@ public class Host_GUI extends JFrame{
         setText("Go");
     }};
 
-    final private JTable file_table = new JTable(){{
+
+    String[] cols = {"Hostname", "Port", "Filename", "Connection Speed"};
+    private DefaultTableModel model = new DefaultTableModel(){{
+        for(String col : cols){
+            addColumn(col);
+        }
+    }};
+
+    final private JTable file_table = new JTable(model){{
+        setPreferredSize(new DimensionUIResource(scrn_size.width-20,200-10));
+    }};
+
+    final private JScrollPane scroll_pane = new JScrollPane(file_table){{
+        setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         setPreferredSize(new DimensionUIResource(scrn_size.width-20,200));
     }};
+
 
     final private JTextArea output_text = new JTextArea(){{
         setPreferredSize(new DimensionUIResource(scrn_size.width -20, 200));
@@ -132,7 +150,8 @@ public class Host_GUI extends JFrame{
         add(tb_keyword);
 
         add(btn_search);
-        add(file_table);
+        add(scroll_pane);
+        //add(file_table);
     }};
 
     private final JPanel cmd_panel = new JPanel(){{
@@ -209,5 +228,38 @@ public class Host_GUI extends JFrame{
                 }
             }
         });
+    }
+
+    // add(hostname);
+    //                 add(port);
+    //                 add(filename);
+    //                 add(connSpeed);
+
+    public void display_file_table(Dictionary<Integer,ArrayList<Object>> file_table){
+        // String[] cols = {"Hostname", "Port", "Filename", "Connection Speed"};
+        // DefaultTableModel model = new DefaultTableModel(cols,0){{
+        //     for(int i = 0; i<file_table.size(); i++){
+        //         String[] info = {file_table.get(i).get(0).toString(), file_table.get(i).get(1).toString(), file_table.get(i).get(2).toString(), file_table.get(i).get(3).toString()};
+                // for(String in : info){
+                //     System.out.print(in + " ");
+                // }
+        //         System.out.println("");
+        //         addRow(info);
+        //     }
+        // }};
+        for(int i=0; i<model.getRowCount(); i++){
+            model.removeRow(i);
+        }
+
+        for(int i =0; i<file_table.size(); i++){
+            String[] info = {file_table.get(i).get(0).toString(), file_table.get(i).get(1).toString(), file_table.get(i).get(2).toString(), file_table.get(i).get(3).toString()};
+            for(String in : info){
+                System.out.print(in + " ");
+            }
+            model.addRow(info);
+        }
+
+        //this.file_table = new JTable(model);
+        //search_panel.updateUI();
     }
 }

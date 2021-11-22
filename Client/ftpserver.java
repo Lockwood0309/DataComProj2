@@ -8,12 +8,19 @@ import java.util.*;
 
 public class ftpserver extends Thread {
 
+    ftpClient my_client;
+
+    public ftpserver(ftpClient client){
+        my_client = client;
+    }
+
     public void run(){
         try{
-            ServerSocket serverSocket = new ServerSocket(21);
-
+            ServerSocket serverSocket = new ServerSocket(my_client.connPort);
+            System.out.println(my_client.connPort);
             while(true){
                 server_handler ftp_server_handler = new server_handler(serverSocket.accept());
+                System.out.println("Client has connected");
                 Thread clientHandler = new Thread(ftp_server_handler);
                 clientHandler.start();
             }
@@ -48,15 +55,43 @@ public class ftpserver extends Thread {
         while(true){
             String commandFromClient = inFromClient.readLine();
             StringTokenizer tokens = new StringTokenizer(commandFromClient);
-            String frstln = tokens.nextToken();
-            if(frstln.equals("close")){
+            int port = Integer.parseInt(tokens.nextToken());
+            String cmd = tokens.nextToken();
+            if(cmd.equals("close")){
                 //clientCommand = frstln;
-            }else{
-                port = Integer.parseInt(frstln);
-                //clientCommand = tokens.nextToken();
+            }else if(cmd.equals("retr")){
+                String filename = tokens.nextToken();
+                retr_file(port,filename);
             }
 
         }
+        }
+
+        private void retr_file(int port, String filename){
+            try{
+                Socket dataSocket = new Socket(connectionSocket.getInetAddress(), port);
+                DataOutputStream  outData = new DataOutputStream(dataSocket.getOutputStream());
+                File file = new File(filename);
+                if (file.exists()) {
+                    //outData.writeUTF("200");
+                    BufferedReader reader = new BufferedReader(new FileReader(file));
+                    String line;
+                    while(true){
+                        if((line = reader.readLine()) == null){
+                            outData.writeUTF("eof");
+                            break;
+                        }else{
+                            outData.writeUTF(line);
+                        }
+                    }
+                    reader.close();
+                }else{
+                    outData.writeUTF("550");
+                }
+                dataSocket.close();
+            }catch(Exception e){
+
+            }
         }
 
     }
